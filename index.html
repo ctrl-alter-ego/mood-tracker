@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#667eea">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>">
+</head>
+<body>
+    <div id="container">
+        <h1>Mood Tracker</h1>
+
+        <div id="mood-app" class="mood-app" aria-live="polite">
+            <section class="mood-card">
+                <div class="mood-card__header">
+                    <h2>Today</h2>
+                    <div class="mood-meta">
+                        <div id="today-label" class="mood-meta__title"></div>
+                        <div id="today-status" class="mood-meta__status" role="status"></div>
+                    </div>
+                </div>
+
+                <div class="mood-table-wrap">
+                    <table class="mood-table" aria-label="Daily mood ratings">
+                        <thead>
+                            <tr>
+                                <th scope="col">Overall</th>
+                                <th scope="col">Physical health</th>
+                                <th scope="col">Mental health</th>
+                                <th scope="col">Sleep quality</th>
+                                <th scope="col">Exercise level</th>
+                                <th scope="col">Food/drink quality</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="today-row"></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mood-actions">
+                    <button id="save-today" class="mood-primary">Save</button>
+                    <button id="fill-yesterday" class="mood-secondary" type="button">Copy yesterday</button>
+                </div>
+
+                <div id="insights" class="mood-insights" aria-live="polite"></div>
+            </section>
+
+            <section class="mood-card">
+                <div class="mood-card__header mood-card__header--row">
+                    <h2>Trends</h2>
+                    <div class="mood-controls">
+                        <div class="segmented" role="tablist" aria-label="Time range">
+                            <button class="segmented__btn" data-range="week" role="tab" aria-selected="true" type="button">Week</button>
+                            <button class="segmented__btn" data-range="month" role="tab" aria-selected="false" type="button">Month</button>
+                            <button class="segmented__btn" data-range="year" role="tab" aria-selected="false" type="button">Year</button>
+                        </div>
+                        <label class="mood-control">
+                            <span class="mood-control__label">Metric</span>
+                            <select id="metric-select" class="mood-control__input"></select>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mood-chart">
+                    <svg id="trend-chart" class="mood-chart__svg" viewBox="0 0 900 300" preserveAspectRatio="none" aria-label="Mood trend chart" role="img"></svg>
+                    <div id="chart-tooltip" class="mood-tooltip" hidden></div>
+                </div>
+
+                <div id="trend-summary" class="mood-summary"></div>
+            </section>
+
+            <section class="mood-card">
+                <details id="history-details">
+                    <summary>History & edits</summary>
+                    <div class="mood-history">
+                        <div class="mood-history__controls">
+                            <label class="mood-control">
+                                <span class="mood-control__label">Edit a date</span>
+                                <input id="edit-date" class="mood-control__input" type="date">
+                            </label>
+                            <button id="load-edit-date" class="mood-secondary" type="button">Load</button>
+                            <button id="save-edit-date" class="mood-primary" type="button" disabled>Save date</button>
+                        </div>
+
+                        <div class="mood-table-wrap">
+                            <table class="mood-table mood-table--compact" aria-label="Edit a past day">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Overall</th>
+                                        <th scope="col">Physical</th>
+                                        <th scope="col">Mental</th>
+                                        <th scope="col">Sleep</th>
+                                        <th scope="col">Exercise</th>
+                                        <th scope="col">Food/drink</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="edit-row"></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <details class="mood-backups">
+                            <summary>Backup & restore</summary>
+                            <div class="mood-backups__body">
+                                <p class="mood-note">
+                                    Entries were stored locally in this browser. To protect against browser data clearing or device loss, exporting a backup occasionally helps.
+                                </p>
+                                <div class="mood-actions">
+                                    <button id="export-json" class="mood-secondary" type="button">Export JSON backup</button>
+                                    <label class="mood-file">
+                                        <input id="import-json" type="file" accept="application/json">
+                                        <span class="mood-secondary">Import JSON backup</span>
+                                    </label>
+                                </div>
+                                <p id="backup-status" class="mood-note" role="status"></p>
+                            </div>
+                        </details>
+
+                        <details class="mood-danger">
+                            <summary>Danger zone</summary>
+                            <div class="mood-danger__body">
+                                <p class="mood-note">This deletes all saved mood entries in this browser.</p>
+                                <button id="reset-data" class="mood-danger__btn" type="button">Delete all local data</button>
+                            </div>
+                        </details>
+
+                        <div class="mood-history__table">
+                            <h3 class="mood-h3">Recent entries (hidden by default)</h3>
+                            <div class="mood-table-wrap">
+                                <table class="mood-table mood-table--recent" aria-label="Recent mood entries">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Overall</th>
+                                            <th scope="col">Physical</th>
+                                            <th scope="col">Mental</th>
+                                            <th scope="col">Sleep</th>
+                                            <th scope="col">Exercise</th>
+                                            <th scope="col">Food/drink</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recent-tbody"></tbody>
+                                </table>
+                            </div>
+                            <div class="mood-actions">
+                                <button id="show-more" class="mood-secondary" type="button">Show more</button>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </section>
+        </div>
+    </div>
+
+    <script src="mood.js"></script>
+</body>
+</html>
