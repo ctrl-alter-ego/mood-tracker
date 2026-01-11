@@ -29,6 +29,7 @@
     todayLabel: document.getElementById('today-label'),
     todayStatus: document.getElementById('today-status'),
     todayRow: document.getElementById('today-row'),
+    todayComment: document.getElementById('today-comment'),
     saveToday: document.getElementById('save-today'),
     fillYesterday: document.getElementById('fill-yesterday'),
     insights: document.getElementById('insights'),
@@ -44,6 +45,7 @@
     loadEditDate: document.getElementById('load-edit-date'),
     saveEditDate: document.getElementById('save-edit-date'),
     editRow: document.getElementById('edit-row'),
+    editComment: document.getElementById('edit-comment'),
     recentTbody: document.getElementById('recent-tbody'),
     showMore: document.getElementById('show-more'),
 
@@ -72,6 +74,7 @@
     els.todayLabel.textContent = formatPrettyDate(todayKey);
 
     renderEntryRow(els.todayRow, todayKey, 'today');
+    renderComment(els.todayComment, todayKey);
     renderInsights(todayKey);
     refreshSaveStatus(todayKey);
 
@@ -117,6 +120,7 @@
         return;
       }
       writeRowValues('today', yesterday);
+      writeComment('today', yesterday);
       scheduleAutosave(todayKey);
     });
 
@@ -127,11 +131,16 @@
       scheduleAutosave(getTodayKey());
     });
 
+    els.todayComment.addEventListener('input', () => {
+      scheduleAutosave(getTodayKey());
+    });
+
     els.loadEditDate.addEventListener('click', () => {
       const key = els.editDate.value;
       if (!key) return;
       activeEditDateKey = key;
       renderEntryRow(els.editRow, key, 'edit');
+      renderComment(els.editComment, key);
       els.saveEditDate.disabled = false;
     });
 
@@ -179,6 +188,7 @@
         els.metricSelect.value = store.ui.metric;
         const todayKeyNow = getTodayKey();
         renderEntryRow(els.todayRow, todayKeyNow, 'today');
+        renderComment(els.todayComment, todayKeyNow);
         renderInsights(todayKeyNow);
         refreshSaveStatus(todayKeyNow);
         renderTrends();
@@ -205,6 +215,7 @@
 
       const todayKeyNow = getTodayKey();
       renderEntryRow(els.todayRow, todayKeyNow, 'today');
+      renderComment(els.todayComment, todayKeyNow);
       renderInsights(todayKeyNow);
       refreshSaveStatus(todayKeyNow, { showSavedNow: true });
       renderTrends();
@@ -218,6 +229,7 @@
       const todayKeyNow = getTodayKey();
       els.todayLabel.textContent = formatPrettyDate(todayKeyNow);
       renderEntryRow(els.todayRow, todayKeyNow, 'today');
+      renderComment(els.todayComment, todayKeyNow);
       renderInsights(todayKeyNow);
       refreshSaveStatus(todayKeyNow);
       renderTrends();
@@ -278,6 +290,10 @@
       const raw = el?.value ?? '';
       next[m.key] = raw === '' ? null : clamp1to5(Number(raw));
     }
+    const commentEl = document.getElementById(`${prefix}-comment`);
+    const comment = commentEl?.value?.trim() || '';
+    // Always include comment field (even if empty) so clearing it removes it from entry
+    next.comment = comment || null;
     return next;
   }
 
@@ -288,6 +304,21 @@
       const v = values?.[m.key];
       el.value = typeof v === 'number' ? String(clamp1to5(v)) : '';
     }
+  }
+
+  function renderComment(textareaEl, key) {
+    if (!textareaEl) return;
+    const entry = store.entries[key] || {};
+    // Handle both new entries with comment field and old entries without it
+    textareaEl.value = (entry.comment && typeof entry.comment === 'string') ? entry.comment : '';
+  }
+
+  function writeComment(prefix, values) {
+    const commentEl = document.getElementById(`${prefix}-comment`);
+    if (!commentEl) return;
+    // Handle both new entries with comment field and old entries without it
+    const comment = (values?.comment && typeof values.comment === 'string') ? values.comment : '';
+    commentEl.value = comment;
   }
 
   function scheduleAutosave(key) {
@@ -323,6 +354,16 @@
     for (const m of METRICS) {
       const v = entry?.[m.key];
       normalized[m.key] = typeof v === 'number' ? clamp1to5(v) : null;
+    }
+    // Comment is optional - preserve it if present and non-empty, otherwise omit it
+    // This ensures backward compatibility with entries that don't have comments
+    if (entry?.comment != null) {
+      if (typeof entry.comment === 'string') {
+        const trimmed = entry.comment.trim();
+        if (trimmed) {
+          normalized.comment = trimmed;
+        }
+      }
     }
     return normalized;
   }

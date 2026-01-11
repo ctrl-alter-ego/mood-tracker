@@ -476,6 +476,41 @@ tr.rest-day {
     background: #f8f9ff;
 }
 
+.mood-comment {
+    margin-top: 12px;
+}
+
+.mood-comment__label {
+    display: block;
+    font-weight: 700;
+    color: #333;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+}
+
+.mood-comment__textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: #fff;
+    resize: vertical;
+    min-height: 60px;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.mood-comment__textarea:focus {
+    outline: none;
+    border-color: #66b1ea;
+    background: #f8f9ff;
+}
+
+.mood-comment__textarea::placeholder {
+    color: #999;
+}
+
 .mood-actions {
     display: flex;
     gap: 10px;
